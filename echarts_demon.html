@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECharts 功能展示</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 左侧导航栏 - 磨砂玻璃效果 */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        .sidebar-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 10px;
+        }
+
+        .sidebar-header h1 {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 600;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .sidebar-header p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .nav-item {
+            padding: 15px 25px;
+            color: rgba(255, 255, 255, 0.85);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-left-color: #fff;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .nav-item i {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* 右侧内容区 */
+        .content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chart-title {
+            color: #fff;
+            font-size: 22px;
+            font-weight: 600;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .chart-desc {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        .chart-area {
+            width: 100%;
+            height: 550px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* 特性标签 */
+        .feature-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .tag {
+            background: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.9);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .content {
+                margin-left: 0;
+            }
+        }
+
+        /* 图标样式 */
+        .icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        /* 自定义emoji图标 */
+        .nav-emoji {
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧导航栏 -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h1>📊 ECharts 展示</h1>
+                <p>功能丰富的数据可视化库</p>
+            </div>
+            <div class="nav-item active" data-chart="line">
+                <span class="nav-emoji">📈</span>
+                <span>折线图 (Line)</span>
+            </div>
+            <div class="nav-item" data-chart="bar">
+                <span class="nav-emoji">📊</span>
+                <span>柱状图 (Bar)</span>
+            </div>
+            <div class="nav-item" data-chart="pie">
+                <span class="nav-emoji">🥧</span>
+                <span>饼图 (Pie)</span>
+            </div>
+            <div class="nav-item" data-chart="scatter">
+                <span class="nav-emoji">⭐</span>
+                <span>散点图 (Scatter)</span>
+            </div>
+            <div class="nav-item" data-chart="radar">
+                <span class="nav-emoji">🎯</span>
+                <span>雷达图 (Radar)</span>
+            </div>
+            <div class="nav-item" data-chart="heatmap">
+                <span class="nav-emoji">🔥</span>
+                <span>热力图 (Heatmap)</span>
+            </div>
+            <div class="nav-item" data-chart="candlestick">
+                <span class="nav-emoji">📉</span>
+                <span>K线图 (Candlestick)</span>
+            </div>
+            <div class="nav-item" data-chart="gauge">
+                <span class="nav-emoji">🎛️</span>
+                <span>仪表盘 (Gauge)</span>
+            </div>
+            <div class="nav-item" data-chart="funnel">
+                <span class="nav-emoji">🔻</span>
+                <span>漏斗图 (Funnel)</span>
+            </div>
+            <div class="nav-item" data-chart="graph">
+                <span class="nav-emoji">🔗</span>
+                <span>关系图 (Graph)</span>
+            </div>
+            <div class="nav-item" data-chart="treemap">
+                <span class="nav-emoji">🌳</span>
+                <span>矩形树图 (Treemap)</span>
+            </div>
+            <div class="nav-item" data-chart="sankey">
+                <span class="nav-emoji">🌊</span>
+                <span>桑基图 (Sankey)</span>
+            </div>
+        </nav>
+
+        <!-- 右侧内容区 -->
+        <main class="content">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div>
+                        <h2 class="chart-title" id="chartTitle">折线图 - 多轴联动与动态数据</h2>
+                        <p class="chart-desc" id="chartDesc">展示多条折线、渐变填充、平滑曲线、数据缩放等高级特性</p>
+                    </div>
+                </div>
+                <div id="chart" class="chart-area"></div>
+                <div class="feature-tags" id="featureTags">
+                    <span class="tag">渐变填充</span>
+                    <span class="tag">多系列</span>
+                    <span class="tag">平滑曲线</span>
+                    <span class="tag">数据缩放</span>
+                    <span class="tag">动画效果</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 初始化图表
+        const chartDom = document.getElementById('chart');
+        let myChart = echarts.init(chartDom);
+
+        // 图表配置集合
+        const chartConfigs = {
+            // 1. 折线图 - 多轴联动与动态数据
+            line: {
+                title: '折线图 - 多轴联动与动态数据',
+                desc: '展示多条折线、渐变填充、平滑曲线、数据缩放等高级特性',
+                tags: ['渐变填充', '多系列', '平滑曲线', '数据缩放', '动画效果'],
+                option: {
+                    backgroundColor: 'transparent',
+                    title: {
+                        text: '2024年度销售数据分析',
+                        subtext: '月度趋势对比',
+                        left: 'center',
+                        textStyle: { color: '#fff', fontSize: 18 },
+                        subtextStyle: { color: 'rgba(255,255,255,0.7)' }
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: { type: 'cross' },
+                        backgroundColor: 'rgba(50,50,50,0.9)',
+                        borderColor: 'rgba(255,255,255,0.2)'
+                    },
+                    legend: {
+                        data: ['销售额', '利润', '订单量', '客户数'],
+                        top: 50,
+                        textStyle: { color: 'rgba(255,255,255,0.8)' }
+                    },
+                    grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
+                    xAxis: {
+                        type: 'category',
+                        boundaryGap: false,
+                        data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                        axisLine: { lineStyle: { color: 'rgba(255,255,255,0.3)' } },
+                        axisLabel: { color: 'rgba(255,255,255,0.7)' }
+                    },
+                    yAxis: [
+                        {
+                            type: 'value',
+                            name: '金额(万元)',
+                            axisLine: { lineStyle: { color: 'rgba(255,255,255,0.3)' } },
+                            axisLabel: { color: 'rgba(255,255,255,0.7)' },
+                            splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+                        },
+                        {
+                            type: 'value',
+                            name: '数量',
+                            axisLine: { lineStyle: { color: 'rgba(255,255,255,0.3)' } },
+                            axisLabel: { color: 'rgba(255,255,255,0.7)' },
+                            splitLine: { show: false }
+                        }
+                    ],
+                    dataZoom: [
+                        { type: 'inside', start: 0, end: 100 },
+                        { start: 0, end: 100, handleStyle: { color: '#fff' } }
+                    ],
+                    series: [
+                        {
+                            name: '销售额',
+                            type: 'line',
+                            smooth: true,
+                            data: [820, 932, 901, 1234, 1290, 1530, 1720, 1650, 1890, 2150, 2300, 2800],
+                            areaStyle: {
+                                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                    { offset: 0, color: 'rgba(128, 255, 165, 0.5)' },
+                                    { offset: 1, color: 'rgba(1, 191, 236, 0.1)' }
+                                ])
+                            },
+                            lineStyle: { color: '#80FFA5', width: 3 },
+                            itemStyle: { color: '#80FFA5' }
+                        },
+                        {
+                            name: '利润',
+                            type: 'line',
+                            smooth: true,
+                            data: [320, 452, 401, 534, 590, 730, 820, 750, 890, 1050, 1200, 1400],
+                            areaStyle: {
+                                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                    { offset: 0, color: 'rgba(0, 221, 255, 0.5)' },
+                                    { offset: 1, color: 'rgba(77, 119, 255, 0.1)' }
+                                ])
+                            },
+                            lineStyle: { color: '#00DDFF', width: 3 },
+                            itemStyle: { color: '#00DDFF' }
+                        },
+                        {
+                            name: '订单量',
+                            type: 'line',
+                            yAxisIndex: 1,
+                            smooth: true,
+                            data: [150, 230, 224, 318, 335, 430, 510, 485, 560, 640, 720, 850],
+                            lineStyle: { color: '#FFBF00', width: 2, type: 'dashed' },
+                            itemStyle: { color: '#FFBF00' }
+                        },
+                        {
+                            name: '客户数',
+                            type: 'line',
+                            yAxisIndex: 1,
+                            smooth: true,
+                            data: [80, 120, 130, 180, 200, 250, 310, 290, 350, 420, 480, 560],
+                            lineStyle: { color: '#FF6E76', width: 2 },
+                            itemStyle: { color: '#FF6E76' }
+                        }
+                    ]
+                }
+            },
+
+            // 2. 柱状图 - 多维对比与堆叠
+            bar: {
+                title: '柱状图 - 多维对比与堆叠',
+                desc: '展示堆叠柱状图、负值处理、标签旋转、渐变色彩等特性',
+                tags: ['堆叠效果', '渐变色彩', '负值处理', '柱状阴影', '动态排序'],
+                option: {
+                    backgroundColor: 'transparent',
+                    title: {
+                        text: '各部门季度业绩对比',
+                        subtext: '包含收入与支出分析',
+                        left: 'center',
+                        textStyle: { color: '#fff', fontSize: 18 },
+                        subtextStyle: { color: 'rgba(255,255,255,0.7)' }
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: { type: 'shadow' },
+                        backgroundColor: 'rgba(50,50,50,0.9)'
+                    },
+                    legend: {
+                        data: ['收入', '成本', '利润', '预算'],
+                        top: 50,
+                        textStyle: { color: 'rgba(255,255,255,0.8)' }
+                    },
+                    grid: { left: '3%', right: '4%', bottom: '10%', containLabel: true },
+                    xAxis: {
+                        type: 'category',
+                        data: ['研发部', '市场部', '销售部', '运营部', '财务部', '人事部'],
+                        axisLine: { lineStyle: { color: 'rgba(255,255,255,0.3)' } },
+                        axisLabel: { color: 'rgba(255,255,255,0.7)', rotate: 0 }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: '金额(万元)',
+                        axisLine: { lineStyle: { color: 'rgba(255,255,255,0.3)' } },
+                        axisLabel: { color: 'rgba(255,255,255,0.7)' },
+                        splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+                    },
+                    series: [
+                        {
+                            name: '收入',
+                            type: 'bar',
+                            stack: 'total',
+                            data: [520, 380, 650, 290, 180, 150],
+                            itemStyle: {
+                                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                    { offset: 0, color: '#83bff6' },
+                                    { offset: 0.5, color: '#188df0' },
+                                    { offset: 1, color: '#188df0' }
+                                ])
+                            },
+                            emphasis: { itemStyle: { color: '#188df0' } }
+                        },
+                        {
+                            name: '成本',
+                            type: 'bar',
+                            stack: 'total',
+                            data: [-280, -220, -350, -180, -120, -100],
+                            itemStyle: {
+                                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                    { offset: 0, color: '#ff7875' },
+                                    { offset: 1, color: '#ff4d4f' }
+                                ])
+                            }
+                        },
+                        {
+                            name: '利润',
+                            type: 'bar',
+                            data: [240, 160, 300, 110, 60, 50],
+                            itemStyle: {
+                                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                    { offset: 0, color: '#95de64' },
+                                    { offset: 1, color: '#52c41a' }
+                                ])
+                            },
+                            label: {
+                                show: true,
+                                position: 'top',
+                                color: '#fff',
+                                formatter: '{c}万'
+                            }
+                        },
+                        {
+                            name: '预算',
+                            type: 'bar',
+                            data: [280, 200, 350, 150, 80, 70],
+                            itemStyle: {
+                                color: 'rgba(255,255,255,0.2)',
+                                borderColor: 'rgba(255,255,255,0.5)',
+                                borderWidth: 1
+                            }
+                        }
+                    ]
+                }
+            },
+
+            // 3. 饼图 - 玫瑰图与嵌套
+            pie: {
+                title: '饼图 - 玫瑰图与嵌套效果',
+                desc: '展示南丁格尔玫瑰图、嵌套饼图、富文本标签、选中效果等特性',
+                tags: ['南丁格尔图', '嵌套效果', '富文本标签', '选中高亮', '自定义半径'],
+                option: {
+                    backgroundColor: 'transparent',
+                    title: {
+                        text: '产品销售占比分析',
+                        subtext: '内圈：类别 | 外圈：具体产品',
+                        left: 'center',
+                        textStyle: { color: '#fff', fontSize: 18 },
+                        subtextStyle: { color: 'rgba(255,255,255,0.7)' }
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{a} <br/>{b}: {c} ({d}%)',
+                        backgroundColor: 'rgba(50,50,50,0.9)'
+                    },
+                    legend: {
+                        orient: 'vertical',
+                        left: 'left',
+                        top: 'middle',
+                        textStyle: { color: 'rgba(255,255,255,0.8)' },
+                        data: ['电子产品', '服装', '食品', '家居', '手机', '电脑', '平板', '男装', '女装', '童装', '零食', '饮料', '生鲜', '家具', '装饰']
+                    },
+                    series: [
+                        {
+                            name: '产品类别',
+                            type: 'pie',
+                            selectedMode: 'single',
+                            radius: [0, '35%'],
+                            label: {
+                                position: 'inner',
+                                fontSize: 12,
+                                color: '#fff'
+                            },
+                            labelLine: { show: false },
+                            data: [
+                                { value: 1548, name: '电子产品', itemStyle: { color: '#5470c6' } },
+                                { value: 935, name: '服装', itemStyle: { color: '#91cc75' } },
+                                { value: 680, name: '食品', itemStyle: { color: '#fac858' } },
+                                { value: 456, name: '家居', itemStyle: { color: '#ee6666' } }
+                            ]
+                        },
+                        {
+                            name: '具体产品',
+                            type: 'pie',
+                            radius: ['50%', '75%'],
+                            roseType: 'area',
+                            itemStyle: { borderRadius: 8, borderColor: 'rgba(0,0,0,0.3)', borderWidth: 2 },
+                            label: {
+                                color: 'rgba(255,255,255,0.8)',
+                                formatter: '{b}\n{d}%'
+                            },
+                            data: [
+                                { value: 748, name: '手机', itemStyle: { color: '#73c0de' } },
+                                { value: 500, name: '电脑', itemStyle: { color: '#5470c6' } },
+                                { value: 300, name: '平板', itemStyle: { color: '#9a60b4' } },
+                                { value: 435, name: '男装', itemStyle: { color: '#91cc75' } },
+                                { value: 310, name: '女装', itemStyle: { color: '#3ba272' } },
+                                { value: 190, name: '童装', itemStyle: { color: '#71c671' } },
+                                { value: 280, name: '零食', itemStyle: { color: '#fac858' } },
+                                { value: 230, name: '饮料', itemStyle: { color: '#d4a017' } },
+                                { value: 170, name: '生鲜', itemStyle: { color: '#f5c242' } },
+                                { value: 286, name: '家具', itemStyle: { color: '#ee6666' } },
+                                { value: 170, name: '装饰', itemStyle: { color: '#ea7ccc' } }
+                            ]
+                        }
+                    ]
+                }
+            },
+
+            // 4. 散点图 - 气泡与回归分析
+            scatter: {
+                title: '散点图 - 气泡与回归分析',
+                desc: '展示气泡大小映射、回归曲线、多维数据、视觉映射等特性',
+                tags: ['气泡大小', '回归曲线', '视觉映射', '多维数据', '密度分布'],
+                option: {
+                    backgroundColor: 'transparent',
+                    title: {
+                        text: '城市发展指数分析',
+                        subtext: 'GDP vs 人口 | 气泡大小：面积',
+                        left: 'center',
+                        textStyle: { color: '#fff', fontSize: 18 },
+                        subtextStyle: { color: 'rgba(255,255,255,0.7)' }
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: function(params) {
+                            return params.seriesName + '<br/>' +
+                                   'GDP: ' + params.value[0] + ' 亿<br/>' +
+                                   '人口: ' + params.value[1] + ' 万<br/>' +
+                                   '面积: ' + params.value[2] + ' km²';
+                        },
+                        backgroundColor: 'rgba(50,50,50,0.9)'
+                    },
+                    legend: {
+                        data: ['一线城市', '二线城市', '三线城市'],
+                        top: 50,
+                        textStyle: { color: 'rgba(255,255,255,0.8)' }
+                    },
+                    grid: { left: '10%', right: '10%', bottom: '15%' },
+                    xAxis: {
+                        type: 'value',
+                        name: 'GDP(亿元)',
+                        nameLocation: 'middle',
+                        nameGap: 30,
+                        axisLine: { lineStyle: { color: 'rgba(255,255,255,0.3)' } },
+                        axisLabel: { color: 'rgba(255,255,255,0.7)' },
+                        splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: '人口(万)',
+                        nameLocation: 'middle',
+                        nameGap: 40,
+                        axisLine: { lineStyle: { color: 'rgba(255,255,255,0.3)' } },
+                        axisLabel: { color: 'rgba(255,255,255,0.7)' },
+                        splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+                    },
+                    series: [
+                        {
+                            name: '一线城市',
+                            type: 'scatter',
+                            symbolSize: function(val) { return Math.sqrt(val[2]) / 8; },
+                            data: [
+                                [38700, 2428, 16410],
+                                [36102, 2487, 6340],
+                                [27466, 1560, 1997],
+                                [25019, 1756, 7434]
+                            ],
+                            itemStyle: {
+                                color: new echarts.graphic.RadialGradient(0.5, 0.5, 0.5, [
+                                    { offset: 0, color: 'rgba(255, 128, 128, 0.8)' },
+                                    { offset: 1, color: 'rgba(255, 50, 50, 0.3)' }
+                                ])
+                            }
+                        },
+                        {
+                            name: '二线城市',
+                            type: 'scatter',
+                            symbolSize: function(val) { return Math.sqrt(val[2]) / 8; },
+                            data: [
+                                [18287, 1035, 8494],
+                                [17013, 950, 7434],
+                                [16520, 1121, 11819],
+                                [14928, 870, 5904],
+                                [14104, 784, 4627],
+                                [12556, 850, 10198],
+                                [11458, 1050, 7446],
+                                [10572, 706, 6507]
+                            ],
+                            itemStyle: {
+                                color: new echarts.graphic.RadialGradient(0.5, 0.5, 0.5, [
+                                    { offset: 0, color: 'rgba(128, 200, 255, 0.8)' },
+                                    { offset: 1, color: 'rgba(50, 150, 255, 0.3)' }
+                                ])
+                            }
+                        },
+                        {
+                            name: '三线城市',
+                            type: 'scatter',
+                            symbolSize: function(val) { return Math.sqrt(val[2]) / 8; },
+                            data: [
+                                [7820, 520, 3847],
+                                [6543, 490, 2876],
+                                [5890, 380, 1945],
+                                [5234, 410, 3254],
+                                [4876, 350, 2198],
+                                [4321, 290, 1876],
+                                [3987, 320, 2543],
+                                [3654, 280, 1654],
+                                [3210, 245, 1432],
+                                [2876, 220, 1234]
+                            ],
+                            itemStyle: {
+                                color: new echarts.graphic.RadialGradient(0.5, 0.5, 0.5, [
+                                    { offset: 0, color: 'rgba(128, 255, 165, 0.8)' },
+                                    { offset: 1, color: 'rgba(50, 205, 100, 0.3)' }
+                                ])
+                            }
+                        }
+                    ]
+                }
+            },
+
+            // 5. 雷达图 - 多维能力评估
+            radar: {
+                title: '雷达图 - 多维能力评估',
+                desc: '展示多维度数据对比、填充效果、形状定制、指标配置等特性',
+                tags: ['多维对比', '填充效果', '指标配置', '动态数据', '能力画像'],
+                option: {
+                    backgroundColor: 'transparent',
+                    title: {
+                        text: '技术团队能力评估',
+                        subtext: '多维度综合对比分析',
+                        left: 'center',
+                        textStyle: { color: '#fff', fontSize: 18 },
+                        subtextStyle: { color: 'rgba(255,255,255,0.7)' }
+                    },
+                    tooltip: { backgroundColor: 'rgba(50,50,50,0.9)' },
+                    legend: {
+                        data: ['团队A', '团队B', '团队C', '行业平均'],
+                        top: 50,
+                        textStyle: { color: 'rgba(255,255,255,0.8)' }
+                    },
+                    radar: {
+                        center: ['50%', '58%'],
+                        radius: '65%',
+                        indicator: [
+                            { name: '前端开发', max: 100 },
+                            { name: '后端开发', max: 100 },
+                            { name: '架构设计', max: 100 },
+                            { name: '数据库', max: 100 },
+                            { name: '运维能力', max: 100 },
+                            { name: '项目管理', max: 100 },
+                            { name: '沟通协作', max: 100 },
+                            { name: '创新能力', max: 100 }
+                        ],
+                        axisLine: { lineStyle: { color: 'rgba(255,255,255,0.2)' } },
+                        splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
+                        splitArea: {
+                            areaStyle: {
+                                color: ['rgba(255,255,255,0.05)', 'rgba(255,255,255,0.1)']
+                            }
+                        },
+                        axisName: { color: 'rgba(255,255,255,0.8)' }
+                    },
+                    series: [{
+                        type: 'radar',
+                        data: [
+                            {
+                                value: [95, 88, 82, 85, 78, 90, 85, 92],
+                                name: '团队A',
+                                lineStyle: { color: '#5470c6', width: 2 },
+                                areaStyle: { color: 'rgba(84, 112, 198, 0.3)' },
+                                itemStyle: { color: '#5470c6' }
+                            },
+                            {
+                                value: [78, 92, 95, 90, 85, 75, 80, 78],
+                                name: '团队B',
+                                lineStyle: { color: '#91cc75', width: 2 },
+                                areaStyle: { color: 'rgba(145, 204, 117, 0.3)' },
+                                itemStyle: { color: '#91cc75' }
+                            },
+                            {
+                                value: [85, 80, 78, 95, 92, 82, 88, 85],
+                                name: '团队C',
+                                lineStyle: { color: '#fac858', width: 2 },
+                                areaStyle: { color: 'rgba(250, 200, 88, 0.3)' },
+                                itemStyle: { color: '#fac858' }
+                            },
+                            {
+                                value: [70, 70, 70, 70, 70, 70, 70, 70],
+                                name: '行业平均',
+                                lineStyle: { color: 'rgba(255,255,255,0.5)', width: 1, type: 'dashed' },
+                                itemStyle: { color: 'rgba(255,255,255,0.5)' }
+                            }
+                        ]
+                    }]
+                }
+            },
+
+            // 6. 热力图 - 时间序列分析
+            heatmap: {
+                title: '热力图 - 时间序列分析',
+                desc: '展示日历热力图、颜色映射、数据密度、时间维度等特性',
+                tags: ['颜色映射', '数据密度', '时间维度', '视觉编码', '矩阵展示'],
+                option: {
+                    backgroundColor: 'transparent',
+                    title: {
+                        text: '一周工作效率热力分布',
+                        subtext: '按小时统计任务完成情况',
+                        left: 'center',
+                        textStyle: { color: '#fff', fontSize: 18 },
+                        subtextStyle: { color: 'rgba(255,255,255,0.7)' }
+                    },
+                    tooltip: {
+                        position: 'top',
+                        formatter: function(params) {
+                            const days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+                            return days[params.value[1]] + ' ' + params.value[0] + ':00<br/>完成任务: ' + params.value[2] + ' 项';
+                        },
+                        backgroundColor: 'rgba(50,50,50,0.9)'
+                    },
+                    grid: { left: '10%', right: '10%', top: '18%', bottom: '15%' },
+                    xAxis: {
+                        type: 'category',
+                        data: ['8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21'],
+                        axisLine: { lineStyle: { color: 'rgba(255,255,255,0.3)' } },
+                        axisLabel: { color: 'rgba(255,255,255,0.7)', formatter: '{value}:00' },
+                        splitArea: { show: true, areaStyle: { color: ['rgba(255,255,255,0.02)', 'rgba(255,255,255,0.05)'] } }
+                    },
+                    yAxis: {
+                        type: 'category',
+                        data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                        axisLine: { lineStyle: { color: 'rgba(255,255,255,0.3)' } },
+                        axisLabel: { color: 'rgba(255,255,255,0.7)' },
+                        splitArea: { show: true, areaStyle: { color: ['rgba(255,255,255,0.02)', 'rgba(255,255,255,0.05)'] } }
+                    },
+                    visualMap: {
+                        min: 0,
+                        max: 20,
+                        calculable: true,
+                        orient: 'horizontal',
+                        left: 'center',
+                        bottom: '3%',
+                        textStyle: { color: 'rgba(255,255,255,0.7)' },
+                        inRange: {
+                            color: ['#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026']
+                        }
+                    },
+                    series: [{
+                        name: '任务完成数',
+                        type: 'heatmap',
+                        data: (function() {
+                            const data = [];
+                            const hours = ['8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21'];
+                            for (let i = 0; i < hours.length; i++) {
+                                for (let j = 0; j < 7; j++) {
+                                    let value;
+                                    if (j >= 5) { // 周末
+                                        value = Math.round(Math.random() * 5);
+                                    } else if (i >= 0 && i <= 4) { // 上午高效时段
+                                        value = Math.round(Math.random() * 10 + 10);
+                                    } else if (i === 5) { // 午休
+                                        value = Math.round(Math.random() * 3);
+                                    } else if (i >= 6 && i <= 9) { // 下午
+                                        value = Math.round(Math.random() * 8 + 8);
+                                    } else { // 晚上
+                                        value = Math.round(Math.random() * 6 + 2);
+                                    }
+                                    data.push([i, j, value]);
+                                }
+                            }
+                            return data;
+                        })(),
+                        label: { show: true, color: '#fff', fontSize: 10 },
+                        emphasis: {
+                            itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0, 0, 0, 0.5)' }
+                        }
+                    }]
+                }
+            },
+
+            // 7. K线图 - 股票分析
+            candlestick: {
+                title: 'K线图 - 股票数据分析',
+                desc: '展示K线蜡烛图、MA均线、成交量、技术指标等特性',
+                tags: ['K线蜡烛', 'MA均线', '成交量', '技术指标', '缩放联动'],
+                option: {
+                    backgroundColor: 'transparent',
+                    title: {
+                        text: 'A股某科技股走势分析',
+                        subtext: '含MA5/MA10/MA20均线及成交量',
+                        left: 'center',
+                        textStyle: { color: '#fff', fontSize: 18 },
+                        subtextStyle: { color: 'rgba(255,255,255,0.7)' }
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: { type: 'cross' },
+                        backgroundColor: 'rgba(50,50,50,0.9)'
+                    },
+                    legend: {
+                        data: ['K线', 'MA5', 'MA10', 'MA20'],
+                        top: 50,
+                        textStyle: { color: 'rgba(255,255,255,0.8)' }
+                    },
+                    grid: [
+                        { left: '8%', right: '8%', top: '18%', height: '55%' },
+                        { left: '8%', right: '8%', top: '78%', height: '12%' }
+                    ],
+                    xAxis: [
+                        {
+                            type: 'category',
+                            data: ['12/01', '12/02', '12/03', '12/04', '12/05', '12/06', '12/07', '12/08', '12/09', '12/10', '12/11', '12/12', '12/13', '12/14', '12/15', '12/16', '12/17', '12/18', '12/19', '12/20'],
+                            axisLine: { lineStyle: { color: 'rgba(255,255,255,0.3)' } },
+                            axisLabel: { color: 'rgba(255,255,255,0.7)' }
+                        },
+                        {
+                            type: 'category',
+                            gridIndex: 1,
+                            data: ['12/01', '12/02', '12/03', '12/04', '12/05', '12/06', '12/07', '12/08', '12/09', '12/10', '12/11', '12/12', '12/13', '12/14', '12/15', '12/16', '12/17', '12/18', '12/19', '12/20'],
+                            axisLabel: { show: false }
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            scale: true,
+                            axisLine: { lineStyle: { color: 'rgba(255,255,255,0.3)' } },
+                            axisLabel: { color: 'rgba(255,255,255,0.7)' },
+                            splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
+                        },
+                        {
+                            gridIndex: 1,
+                            axisLine: { lineStyle: { color: 'rgba(255,255,255,0.3)' } },
+                            axisLabel: { color: 'rgba(255,255,255,0.7)', formatter: function(v) { return (v/10000).toFixed(0) + '万'; } },
+                            splitLine: { show: false }
+                        }
+                    ],
+                    dataZoom: [
+                        { type: 'inside', xAxisIndex: [0, 1], start: 0, end: 100 },
+                        { show: true, xAxisIndex: [0, 1], type: 'slider', bottom: '2%', start: 0, end: 100 }
+                    ],
+                    series: [
+                        {
+                            name: 'K线',
+                            type: 'candlestick',
+                            data: [
+                                [20.5, 21.2, 20.3, 21.5],
+                                [21.2, 21.8, 20.9, 22.1],
+                                [21.8, 22.5, 21.5, 22.8],
+                                [22.5, 21.9, 21.6, 22.6],
+                                [21.9, 22.3, 21.7, 22.5],
+                                [22.3, 23.1, 22.0, 23.4],
+                                [23.1, 24.2, 22.9, 24.5],
+                                [24.2, 23.8, 23.5, 24.3],
+                                [23.8, 24.5, 23.6, 24.8],
+                                [24.5, 25.2, 24.2, 25.6],
+                                [25.2, 24.8, 24.5, 25.3],
+                                [24.8, 25.5, 24.6, 25.8],
+                                [25.5, 26.2, 25.3, 26.5],
+                                [26.2, 25.8, 25.5, 26.3],
+                                [25.8, 26.5, 25.6, 26.8],
+                                [26.5, 27.2, 26.3, 27.5],
+                                [27.2, 26.8, 26.5, 27.3],
+                                [26.8, 27.5, 26.6, 27.8],
+                                [27.5, 28.2, 27.3, 28.5],
+                                [28.2, 28.8, 28.0, 29.1]
+                            ],
+                            itemStyle: {
+                                color: '#ef5350',
+                                color0: '#26a69a',
+                                borderColor: '#ef5350',
+                                borderColor0: '#26a69a'
+                            }
+                        },
+                        {
+                            name: 'MA5',
+                            type: 'line',
+                            data: [null, null, null, null, 21.54, 21.94, 22.52, 23.06, 23.58, 24.16, 24.72, 24.96, 25.18, 25.5, 25.72, 26.06, 26.48, 26.82, 27.18, 27.7],
+                            smooth: true,
+                            lineStyle: { color: '#f6c744', width: 1 },
+                            itemStyle: { color: '#f6c744' }
+                        },
+                        {
+                            name: 'MA10',
+                            type: 'line',
+                            data: [null, null, null, null, null, null, null, null, null, 22.48, 22.96, 23.41, 23.89, 24.32, 24.73, 25.15, 25.58, 26.01, 26.45, 26.91],
+                            smooth: true,
+                            lineStyle: { color: '#4dd0e1', width: 1 },
+                            itemStyle: { color: '#4dd0e1' }
+                        },
+                        {
+                            name: 'MA20',
+                            type: 'line',
+                            data: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 24.73],
+                            smooth: true,
+                            lineStyle: { color: '#ba68c8', width: 1 },
+                            itemStyle: { color: '#ba68c8' }
+                        },
+                        {
+                            name: '成交量',
+                            type: 'bar',
+                            xAxisIndex: 1,
+                            yAxisIndex: 1,
+                            data: [125000, 156000, 189000, 142000, 136000, 178000, 234000, 156000, 198000, 267000, 145000, 189000, 256000, 134000, 178000, 289000, 156000, 198000, 278000, 312000],
+                            itemStyle: {
+                                color: function(params) {
+                                    const kData = [
+                                        [20.5, 21.2], [21.2, 21.8], [21.8, 22.5], [22.5, 21.9], [21.9, 22.3],
+                                        [22.3, 23.1], [23.1, 24.2], [24.2, 23.8], [23.8, 24.5], [24.5, 25.2],
+                                        [25.2, 24.8], [24.8, 25.5], [25.5, 26.2], [26.2, 25.8], [25.8, 26.5],
+                                        [26.5, 27.2], [27.2, 26.8], [26.8, 27.5], [27.5, 28.2], [28.2, 28.8]
+                                    ];
+                                    return kData[params.dataIndex][1] >= kData[params.dataIndex][0] ? '#ef5350' : '#26a69a';
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+
+            // 8. 仪表盘 - 多样式展示
+            gauge: {
+                title: '仪表盘 - 多样式展示',
+                desc: '展示多种仪表盘样式、进度条、刻度配置、动态指针等特性',
+                tags: ['多样式', '进度条', '刻度配置', '动态指针', '分段颜色'],
+                option: {
+                    backgroundColor: 'transparent',
+                    title: {
+                        text: '系统运行状态监控',
+                        subtext: '实时性能指标展示',
+                        left: 'center',
+                        textStyle: { color: '#fff', fontSize: 18 },
+                        subtextStyle: { color: 'rgba(255,255,255,0.7)' }
+                    },
+                    tooltip: { formatter: '{a} <br/>{b} : {c}%', backgroundColor: 'rgba(50,50,50,0.9)' },
+                    series: [
+                        {
+                            name: 'CPU使用率',
+                            type: 'gauge',
+                            center: ['25%', '55%'],
+                            radius: '45%',
+                            min: 0,
+                            max: 100,
+                            splitNumber: 10,
+                            progress: { show: true, width: 18 },
+                            axisLine: {
+                                lineStyle: {
+                                    width: 18,
+                                    color: [
+                                        [0.3, '#67e0e3'],
+                                        [0.7, '#37a2da'],
+                                        [1, '#fd666d']
+                                    ]
+                                }
+                            },
+                            axisTick: { show: false },
+                            splitLine: { length: 15, lineStyle: { width: 2, color: '#999' } },
+                            axisLabel: { distance: 25, color: 'rgba(255,255,255,0.6)', fontSize: 10 },
+                            anchor: { show: true, showAbove: true, size: 20, itemStyle: { borderWidth: 8, borderColor: '#fff' } },
+                            title: { show: true, offsetCenter: [0, '70%'], color: 'rgba(255,255,255,0.8)' },
+                            detail: {
+                                valueAnimation: true,
+                                fontSize: 28,
+                                offsetCenter: [0, '45%'],
+                                formatter: '{value}%',
+                                color: '#fff'
+                            },
+                            data: [{ value: 72, name: 'CPU' }]
+                        },
+                        {
+                            name: '内存使用率',
+                            type: 'gauge',
+                            center: ['75%', '55%'],
+                            radius: '45%',
+                            min: 0,
+                            max: 100,
+                            itemStyle: { color: '#58D9F9' },
+                            progress: { show: true, width: 8 },
+                            pointer: { show: false },
+                            axisLine: { show: false },
+                            axisTick: { show: false },
+                            splitLine: { show: false },
+                            axisLabel: { show: false },
+                            title: { show: true, offsetCenter: [0, '70%'], color: 'rgba(255,255,255,0.8)' },
+                            detail: {
+                                valueAnimation: true,
+                                width: '60%',
+                                lineHeight: 40,
+                                borderRadius: 8,
+                                offsetCenter: [0, '0%'],
+                                fontSize: 32,
+                                fontWeight: 'bolder',
+                                formatter: '{value}%',
+                                color: '#58D9F9'
+                            },
+                            data: [{ value: 85, name: '内存' }]
+                        },
+                        {
+                            name: '磁盘IO',
+                            type: 'gauge',
+                            center: ['25%', '55%'],
+                            radius: '55%',
+                            min: 0,
+                            max: 100,
+                            startAngle: 90,
+                            endAngle: -270,
+                            pointer: { show: false },
+                            progress: {
+                                show: true,
+                                overlap: false,
+                                roundCap: true,
+                                clip: false,
+                                itemStyle: { borderWidth: 1, borderColor: '#464646' }
+                            },
+                            axisLine: { lineStyle: { width: 8, color: [[1, 'rgba(255,255,255,0.1)']] } },
+                            splitLine: { show: false },
+                            axisTick: { show: false },
+                            axisLabel: { show: false },
+                            data: [
+                                { value: 45, name: '读取', title: { show: false }, detail: { show: false }, itemStyle: { color: '#7CFFB2' } },
+                                { value: 32, name: '写入', title: { show: false }, detail: { show: false }, itemStyle: { color: '#FDDD60' } }
+                            ],
+                            title: { show: false },
+                            detail: { show: false }
+                        },
+                        {
+                            name: '网络流量',
+                            type: 'gauge',
+                            center: ['75%', '55%'],
+                            radius: '55%',
+                            min: 0,
+                            max: 100,
+                            startAngle: 90,
+                            endAngle: -270,
+                            pointer: { show: false },
+                            progress: {
+                                show: true,
+                                overlap: false,
+                                roundCap: true,
+                                clip: false
+                            },
+                            axisLine: { lineStyle: { width: 8, color: [[1, 'rgba(255,255,255,0.1)']] } },
+                            splitLine: { show: false },
+                            axisTick: { show: false },
+                            axisLabel: { show: false },
+                            data: [
+                                { value: 68, name: '上行', title: { show: false }, detail: { show: false }, itemStyle: { color: '#FF6E76' } },
+                                { value: 82, name: '下行', title: { show: false }, detail: { show: false }, itemStyle: { color: '#58D9F9' } }
+                            ],
+                            title: { show: false },
+                            detail: { show: false }
+                        }
+                    ]
+                }
+            },
+
+            // 9. 漏斗图 - 转化分析
+            funnel: {
+                title: '漏斗图 - 用户转化分析',
+                desc: '展示漏斗转化、对比漏斗、标签定制、渐变效果等特性',
+                tags: ['转化分析', '对比漏斗', '渐变效果', '百分比标签', '分层展示'],
+                option: {
+                    backgroundColor: 'transparent',
+                    title: {
+                        text: '电商用户转化漏斗',
+                        subtext: '从浏览到成交全链路分析',
+                        left: 'center',
+                        textStyle: { color: '#fff', fontSize: 18 },
+                        subtextStyle: { color: 'rgba(255,255,255,0.7)' }
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{a} <br/>{b} : {c}人 ({d}%)',
+                        backgroundColor: 'rgba(50,50,50,0.9)'
+                    },
+                    legend: {
+                        data: ['浏览商品', '加入购物车', '提交订单', '支付订单', '完成评价'],
+                        top: 50,
+                        textStyle: { color: 'rgba(255,255,255,0.8)' }
+                    },
+                    series: [
+                        {
+                            name: '用户转化',
+                            type: 'funnel',
+                            left: '10%',
+                            top: 100,
+                            bottom: 60,
+                            width: '80%',
+                            min: 0,
+                            max: 100,
+                            minSize: '0%',
+                            maxSize: '100%',
+                            sort: 'descending',
+                            gap: 2,
+                            label: {
+                                show: true,
+                                position: 'inside',
+                                formatter: function(params) {
+                                    return params.name + '\n' + params.value + '人';
+                                },
+                                color: '#fff',
+                                fontSize: 13
+                            },
+                            labelLine: {
+                                length: 10,
+                                lineStyle: { width: 1, type: 'solid', color: 'rgba(255,255,255,0.5)' }
+                            },
+                            itemStyle: {
+                                borderColor: 'rgba(255,255,255,0.2)',
+                                borderWidth: 1
+                            },
+                            emphasis: {
+                                label: { fontSize: 16 }
+                            },
+                            data: [
+                                { value: 100000, name: '浏览商品', itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: '#37a2da' }, { offset: 1, color: '#73c0de' }]) } },
+                                { value: 45000, name: '加入购物车', itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: '#9fe6b8' }, { offset: 1, color: '#67e0e3' }]) } },
+                                { value: 18000, name: '提交订单', itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: '#fedb5c' }, { offset: 1, color: '#ffd700' }]) } },
+                                { value: 12000, name: '支付订单', itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: '#fb7293' }, { offset: 1, color: '#e062ae' }]) } },
+                                { value: 5000, name: '完成评价', itemStyle: { color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{ offset: 0, color: '#e690d1' }, { offset: 1, color: '#e7bcf3' }]) } }
+                            ]
+                        }
+                    ]
+                }
+            },
+
+            // 10. 关系图 - 网络拓扑
+            graph: {
+                title: '关系图 - 网络拓扑展示',
+                desc: '展示力导向布局、节点分类、边的关系、拖拽交互等特性',
+                tags: ['力导向', '节点分类', '关系连线', '拖拽交互', '分组聚类'],
+                option: {
+                    backgroundColor: 'transparent',
+                    title: {
+                        text: '技术架构关系图',
+                        subtext: '系统组件依赖关系可视化',
+                        left: 'center',
+                        textStyle: { color: '#fff', fontSize: 18 },
+                        subtextStyle: { color: 'rgba(255,255,255,0.7)' }
+                    },
+                    tooltip: { backgroundColor: 'rgba(50,50,50,0.9)' },
+                    legend: {
+                        data: ['核心服务', '数据层', '前端应用', '中间件', '外部服务'],
+                        top: 50,
+                        textStyle: { color: 'rgba(255,255,255,0.8)' }
+                    },
+                    series: [{
+                        type: 'graph',
+                        layout: 'force',
+                        roam: true,
+                        draggable: true,
+                        symbolSize: 50,
+                        edgeSymbol: ['circle', 'arrow'],
+                        edgeSymbolSize: [4, 10],
+                        label: { show: true, color: '#fff', fontSize: 10 },
+                        categories: [
+                            { name: '核心服务', itemStyle: { color: '#5470c6' } },
+                            { name: '数据层', itemStyle: { color: '#91cc75' } },
+                            { name: '前端应用', itemStyle: { color: '#fac858' } },
+                            { name: '中间件', itemStyle: { color: '#ee6666' } },
+                            { name: '外部服务', itemStyle: { color: '#73c0de' } }
+                        ],
+                        data: [
+                            { name: 'API Gateway', category: 0, symbolSize: 70 },
+                            { name: '用户服务', category: 0, symbolSize: 55 },
+                            { name: '订单服务', category: 0, symbolSize: 55 },
+                            { name: '商品服务', category: 0, symbolSize: 55 },
+                            { name: '支付服务', category: 0, symbolSize: 55 },
+                            { name: 'MySQL', category: 1, symbolSize: 50 },
+                            { name: 'Redis', category: 1, symbolSize: 45 },
+                            { name: 'MongoDB', category: 1, symbolSize: 45 },
+                            { name: 'ES', category: 1, symbolSize: 45 },
+                            { name: 'Web App', category: 2, symbolSize: 50 },
+                            { name: 'Mobile App', category: 2, symbolSize: 50 },
+                            { name: 'Admin', category: 2, symbolSize: 40 },
+                            { name: 'Kafka', category: 3, symbolSize: 50 },
+                            { name: 'Nginx', category: 3, symbolSize: 45 },
+                            { name: '微信支付', category: 4, symbolSize: 40 },
+                            { name: '短信服务', category: 4, symbolSize: 35 },
+                            { name: 'OSS', category: 4, symbolSize: 40 }
+                        ],
+                        links: [
+                            { source: 'Web App', target: 'Nginx' },
+                            { source: 'Mobile App', target: 'Nginx' },
+                            { source: 'Admin', target: 'Nginx' },
+                            { source: 'Nginx', target: 'API Gateway' },
+                            { source: 'API Gateway', target: '用户服务' },
+                            { source: 'API Gateway', target: '订单服务' },
+                            { source: 'API Gateway', target: '商品服务' },
+                            { source: 'API Gateway', target: '支付服务' },
+                            { source: '用户服务', target: 'MySQL' },
+                            { source: '用户服务', target: 'Redis' },
+                            { source: '订单服务', target: 'MySQL' },
+                            { source: '订单服务', target: 'Kafka' },
+                            { source: '商品服务', target: 'MySQL' },
+                            { source: '商品服务', target: 'ES' },
+                            { source: '商品服务', target: 'MongoDB' },
+                            { source: '支付服务', target: '微信支付' },
+                            { source: '支付服务', target: 'Kafka' },
+                            { source: '用户服务', target: '短信服务' },
+                            { source: '商品服务', target: 'OSS' }
+                        ],
+                        lineStyle: { color: 'rgba(255,255,255,0.3)', curveness: 0.1 },
+                        force: { repulsion: 800, edgeLength: [100, 200] }
+                    }]
+                }
+            },
+
+            // 11. 矩形树图 - 层级数据
+            treemap: {
+                title: '矩形树图 - 层级数据展示',
+                desc: '展示层级结构、面积映射、下钻功能、颜色编码等特性',
+                tags: ['层级结构', '面积映射', '下钻功能', '颜色编码', '标签策略'],
+                option: {
+                    backgroundColor: 'transparent',
+                    title: {
+                        text: '公司资产配置分布',
+                        subtext: '点击可下钻查看详情',
+                        left: 'center',
+                        textStyle: { color: '#fff', fontSize: 18 },
+                        subtextStyle: { color: 'rgba(255,255,255,0.7)' }
+                    },
+                    tooltip: {
+                        formatter: function(info) {
+                            const value = info.value;
+                            const treePathInfo = info.treePathInfo;
+                            const treePath = [];
+                            for (let i = 1; i < treePathInfo.length; i++) {
+                                treePath.push(treePathInfo[i].name);
+                            }
+                            return '<div style="color:#fff">' +
+                                   '<b>' + treePath.join(' / ') + '</b><br/>' +
+                                   '金额: ' + value.toLocaleString() + ' 万元' +
+                                   '</div>';
+                        },
+                        backgroundColor: 'rgba(50,50,50,0.9)'
+                    },
+                    series: [{
+                        type: 'treemap',
+                        top: 80,
+                        bottom: 20,
+                        roam: false,
+                        nodeClick: 'zoomToNode',
+                        breadcrumb: {
+                            show: true,
+                            itemStyle: { color: 'rgba(255,255,255,0.3)' },
+                            emphasis: { itemStyle: { color: 'rgba(255,255,255,0.5)' } }
+                        },
+                        label: {
+                            show: true,
+                            formatter: '{b}\n{c}万',
+                            color: '#fff',
+                            fontSize: 12
+                        },
+                        upperLabel: {
+                            show: true,
+                            height: 30,
+                            color: '#fff'
+                        },
+                        itemStyle: {
+                            borderColor: 'rgba(0,0,0,0.3)',
+                            borderWidth: 2,
+                            gapWidth: 2
+                        },
+                        levels: [
+                            {
+                                itemStyle: {
+                                    borderColor: 'rgba(0,0,0,0.5)',
+                                    borderWidth: 3,
+                                    gapWidth: 3
+                                },
+                                upperLabel: { show: false }
+                            },
+                            {
+                                colorSaturation: [0.35, 0.5],
+                                itemStyle: {
+                                    borderColorSaturation: 0.6,
+                                    gapWidth: 2
+                                }
+                            },
+                            {
+                                colorSaturation: [0.35, 0.5],
+                                itemStyle: {
+                                    borderColorSaturation: 0.7,
+                                    gapWidth: 1
+                                }
+                            }
+                        ],
+                        data: [
+                            {
+                                name: '固定资产',
+                                value: 58000,
+                                itemStyle: { color: '#5470c6' },
+                                children: [
+                                    { name: '房产', value: 35000, itemStyle: { color: '#73a0e8' } },
+                                    { name: '设备', value: 15000, itemStyle: { color: '#5470c6' } },
+                                    { name: '车辆', value: 8000, itemStyle: { color: '#3d5a99' } }
+                                ]
+                            },
+                            {
+                                name: '金融资产',
+                                value: 42000,
+                                itemStyle: { color: '#91cc75' },
+                                children: [
+                                    { name: '股票', value: 18000, itemStyle: { color: '#a8db8d' } },
+                                    { name: '债券', value: 12000, itemStyle: { color: '#91cc75' } },
+                                    { name: '基金', value: 8000, itemStyle: { color: '#6db356' } },
+                                    { name: '存款', value: 4000, itemStyle: { color: '#4d9e3a' } }
+                                ]
+                            },
+                            {
+                                name: '流动资产',
+                                value: 28000,
+                                itemStyle: { color: '#fac858' },
+                                children: [
+                                    { name: '现金', value: 12000, itemStyle: { color: '#fdd97c' } },
+                                    { name: '应收账款', value: 10000, itemStyle: { color: '#fac858' } },
+                                    { name: '库存', value: 6000, itemStyle: { color: '#d9a830' } }
+                                ]
+                            },
+                            {
+                                name: '无形资产',
+                                value: 15000,
+                                itemStyle: { color: '#ee6666' },
+                                children: [
+                                    { name: '专利', value: 8000, itemStyle: { color: '#f28888' } },
+                                    { name: '商标', value: 4000, itemStyle: { color: '#ee6666' } },
+                                    { name: '软件', value: 3000, itemStyle: { color: '#d94848' } }
+                                ]
+                            }
+                        ]
+                    }]
+                }
+            },
+
+            // 12. 桑基图 - 流量分析
+            sankey: {
+                title: '桑基图 - 用户流量分析',
+                desc: '展示流量流向、节点层级、颜色渐变、交互高亮等特性',
+                tags: ['流量流向', '节点层级', '渐变效果', '交互高亮', '路径追踪'],
+                option: {
+                    backgroundColor: 'transparent',
+                    title: {
+                        text: '网站用户流量路径分析',
+                        subtext: '用户从入口到转化的完整路径',
+                        left: 'center',
+                        textStyle: { color: '#fff', fontSize: 18 },
+                        subtextStyle: { color: 'rgba(255,255,255,0.7)' }
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        triggerOn: 'mousemove',
+                        backgroundColor: 'rgba(50,50,50,0.9)'
+                    },
+                    series: [{
+                        type: 'sankey',
+                        top: 80,
+                        bottom: 20,
+                        left: 50,
+                        right: 150,
+                        nodeWidth: 20,
+                        nodeGap: 15,
+                        nodeAlign: 'left',
+                        layoutIterations: 32,
+                        orient: 'horizontal',
+                        draggable: true,
+                        label: {
+                            color: 'rgba(255,255,255,0.9)',
+                            fontSize: 11
+                        },
+                        lineStyle: {
+                            color: 'gradient',
+                            curveness: 0.5,
+                            opacity: 0.4
+                        },
+                        itemStyle: {
+                            borderWidth: 1,
+                            borderColor: 'rgba(0,0,0,0.3)'
+                        },
+                        emphasis: {
+                            focus: 'adjacency',
+                            lineStyle: { opacity: 0.8 }
+                        },
+                        data: [
+                            { name: '直接访问', itemStyle: { color: '#5470c6' } },
+                            { name: '搜索引擎', itemStyle: { color: '#91cc75' } },
+                            { name: '社交媒体', itemStyle: { color: '#fac858' } },
+                            { name: '广告投放', itemStyle: { color: '#ee6666' } },
+                            { name: '首页', itemStyle: { color: '#73c0de' } },
+                            { name: '商品列表', itemStyle: { color: '#3ba272' } },
+                            { name: '商品详情', itemStyle: { color: '#fc8452' } },
+                            { name: '购物车', itemStyle: { color: '#9a60b4' } },
+                            { name: '结算页', itemStyle: { color: '#ea7ccc' } },
+                            { name: '支付成功', itemStyle: { color: '#5470c6' } },
+                            { name: '流失', itemStyle: { color: '#999' } }
+                        ],
+                        links: [
+                            { source: '直接访问', target: '首页', value: 30000 },
+                            { source: '搜索引擎', target: '首页', value: 45000 },
+                            { source: '搜索引擎', target: '商品列表', value: 25000 },
+                            { source: '社交媒体', target: '首页', value: 15000 },
+                            { source: '社交媒体', target: '商品详情', value: 12000 },
+                            { source: '广告投放', target: '商品详情', value: 20000 },
+                            { source: '首页', target: '商品列表', value: 65000 },
+                            { source: '首页', target: '流失', value: 25000 },
+                            { source: '商品列表', target: '商品详情', value: 72000 },
+                            { source: '商品列表', target: '流失', value: 18000 },
+                            { source: '商品详情', target: '购物车', value: 55000 },
+                            { source: '商品详情', target: '流失', value: 49000 },
+                            { source: '购物车', target: '结算页', value: 38000 },
+                            { source: '购物车', target: '流失', value: 17000 },
+                            { source: '结算页', target: '支付成功', value: 28000 },
+                            { source: '结算页', target: '流失', value: 10000 }
+                        ]
+                    }]
+                }
+            }
+        };
+
+        // 切换图表函数
+        function switchChart(chartType) {
+            const config = chartConfigs[chartType];
+            if (!config) return;
+
+            // 更新标题和描述
+            document.getElementById('chartTitle').textContent = config.title;
+            document.getElementById('chartDesc').textContent = config.desc;
+
+            // 更新特性标签
+            const tagsContainer = document.getElementById('featureTags');
+            tagsContainer.innerHTML = config.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+
+            // 更新导航状态
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.chart === chartType) {
+                    item.classList.add('active');
+                }
+            });
+
+            // 清除并重绘图表
+            myChart.clear();
+            myChart.setOption(config.option);
+        }
+
+        // 绑定导航点击事件
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const chartType = this.dataset.chart;
+                switchChart(chartType);
+            });
+        });
+
+        // 初始化显示折线图
+        switchChart('line');
+
+        // 响应窗口大小变化
+        window.addEventListener('resize', function() {
+            myChart.resize();
+        });
+
+        // 添加仪表盘动态效果
+        setInterval(function() {
+            if (document.querySelector('.nav-item[data-chart="gauge"]').classList.contains('active')) {
+                const option = myChart.getOption();
+                option.series[0].data[0].value = Math.round(Math.random() * 30 + 60);
+                option.series[1].data[0].value = Math.round(Math.random() * 20 + 70);
+                myChart.setOption(option);
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
